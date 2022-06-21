@@ -1,6 +1,8 @@
+require("dotenv").config();
 const app = require("../app");
+const jwt = require("jsonwebtoken");
 const mockServer = require("supertest");
-const { MongoMemoryServer } = require("mongodb-memory-server");
+// const { MongoMemoryServer } = require("mongodb-memory-server");
 const User = require("../model/user");
 const { startDb, stopDb, deleteAll } = require("./util/inMemoryDb");
 
@@ -30,8 +32,9 @@ describe("requests to api/dashboards", () => {
       username: "johnDoe",
     });
     await johnDoe.save();
+    const token = jwt.sign({ userId: johnDoe._id }, process.env.SECRET_KEY);
 
-    client.set("authorization", johnDoe._id);
+    client.set("authorization", token);
     // can be multiple client.set();
 
     // when
@@ -49,10 +52,11 @@ describe("requests to api/dashboards", () => {
       username: "johnDoe",
     });
     await johnDoe.save();
+    const token = jwt.sign({ userId: johnDoe._id }, process.env.SECRET_KEY);
 
     await User.deleteMany();
 
-    client.set("authorization", johnDoe._id);
+    client.set("authorization", token);
 
     // when
     const response = await client.get("/api/dashboards");

@@ -1,7 +1,8 @@
 const express = require("express");
+require("express-async-errors");
 const app = express();
 const cors = require("cors");
-const logger = require("./middleware/logger");
+const morgan = require("morgan");
 const errorHandler = require("./middleware/errorHandler");
 
 const corsOptions = {
@@ -9,18 +10,18 @@ const corsOptions = {
   optionsSuccessStatus: 200,
 };
 
+morgan.token("host", function (req, res) {
+  return req.hostname;
+});
+
 app.use(cors(corsOptions));
 app.use(express.json()); // body-ban erkezo json-t parse-olni tudja
-app.use([logger]); // use this middleware on every request
+app.use(morgan(":method :url :status - HOST: :host  - :response-time ms")); // use this middleware on every request
 
-const dashboardRoutes = require("./route/dashboard");
-app.use("/api/dashboards", dashboardRoutes);
+const clientRoutes = require("./route/client");
+app.use("/api/client", clientRoutes);
 const userRoutes = require("./route/user.js");
 app.use("/api/user", userRoutes);
-/* tutorial */
-const userRouter = require("./route/user");
-app.use("/user", userRouter);
-/* tutorial */
 
 app.get("/", (req, res) => {
   console.log("Health check completed");
